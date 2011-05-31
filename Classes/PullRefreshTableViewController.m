@@ -194,6 +194,8 @@
 
 - (void)stopLoading {
     isLoading = NO;
+    
+    lastUpdatedLabel.text = [self lastUpdatedString];
 
     // Hide the header
     [UIView beginAnimations:nil context:NULL];
