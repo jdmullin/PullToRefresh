@@ -41,7 +41,7 @@
 
 @implementation PullRefreshTableViewController
 
-@synthesize textPull, textRelease, textLoading, refreshHeaderView, refreshLabel, refreshArrow, refreshSpinner;
+@synthesize textPull, textRelease, textLoading, lastUpdatedDate, refreshHeaderView, refreshLabel, lastUpdatedLabel, refreshArrow, refreshSpinner;
 
 - (id)init
 {
@@ -95,10 +95,16 @@
     refreshHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0 - REFRESH_HEADER_HEIGHT, 320, REFRESH_HEADER_HEIGHT)];
     refreshHeaderView.backgroundColor = [UIColor clearColor];
 
-    refreshLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, REFRESH_HEADER_HEIGHT)];
+    refreshLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0 + 3, 320, (REFRESH_HEADER_HEIGHT / 2) - 3)];
     refreshLabel.backgroundColor = [UIColor clearColor];
     refreshLabel.font = [UIFont boldSystemFontOfSize:12.0];
     refreshLabel.textAlignment = UITextAlignmentCenter;
+    
+    lastUpdatedLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, (REFRESH_HEADER_HEIGHT / 2) - 3, 320, (REFRESH_HEADER_HEIGHT / 2) - 3)];
+    lastUpdatedLabel.backgroundColor = [UIColor clearColor];
+    lastUpdatedLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    lastUpdatedLabel.textAlignment = UITextAlignmentCenter;
+    lastUpdatedLabel.text = [self lastUpdatedString];
 
     refreshArrow = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"arrow.png"]];
     refreshArrow.frame = CGRectMake((REFRESH_HEADER_HEIGHT - 27) / 2,
@@ -110,13 +116,32 @@
     refreshSpinner.hidesWhenStopped = YES;
 
     [refreshHeaderView addSubview:refreshLabel];
+    [refreshHeaderView addSubview:lastUpdatedLabel];
     [refreshHeaderView addSubview:refreshArrow];
     [refreshHeaderView addSubview:refreshSpinner];
     [self.tableView addSubview:refreshHeaderView];
 }
+    
+- (NSString *)lastUpdatedString
+{    
+    NSString *dateString = nil;
+    if (!lastUpdatedDate) {
+        dateString = @"Never updated";
+    }
+    else {
+        NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+        [dateFormatter setDateStyle:NSDateFormatterMediumStyle];
+        [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+        dateString = [dateFormatter stringFromDate:lastUpdatedDate];
+    }
+    
+    return [NSString stringWithFormat:@"Last Updated: %@",dateString];
+}
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
     if (isLoading) return;
+    
+    lastUpdatedLabel.text = [self lastUpdatedString];
     isDragging = YES;
 }
 
@@ -190,6 +215,7 @@
 - (void)refresh {
     // This is just a demo. Override this method with your custom reload action.
     // Don't forget to call stopLoading at the end.
+    // Don't forget to update the lastUpdatedDate ivar in this method.
     [self performSelector:@selector(stopLoading) withObject:nil afterDelay:2.0];
 }
 

@@ -50,6 +50,7 @@
     [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
     NSString *now = [dateFormatter stringFromDate:[NSDate date]];
     [items insertObject:[NSString stringWithFormat:@"%@", now] atIndex:0];
+    self.lastUpdatedDate = [NSDate date];
 
     [self.tableView reloadData];
 

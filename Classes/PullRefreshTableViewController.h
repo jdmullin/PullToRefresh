@@ -29,10 +29,10 @@
 
 #import <UIKit/UIKit.h>
 
-
 @interface PullRefreshTableViewController : UITableViewController {
     UIView *refreshHeaderView;
     UILabel *refreshLabel;
+    UILabel *lastUpdatedLabel;
     UIImageView *refreshArrow;
     UIActivityIndicatorView *refreshSpinner;
     BOOL isDragging;
@@ -40,16 +40,20 @@
     NSString *textPull;
     NSString *textRelease;
     NSString *textLoading;
+    NSDate *lastUpdatedDate;
 }
 
 @property (nonatomic, retain) UIView *refreshHeaderView;
 @property (nonatomic, retain) UILabel *refreshLabel;
+@property (nonatomic, retain) UILabel *lastUpdatedLabel;
 @property (nonatomic, retain) UIImageView *refreshArrow;
 @property (nonatomic, retain) UIActivityIndicatorView *refreshSpinner;
 @property (nonatomic, copy) NSString *textPull;
 @property (nonatomic, copy) NSString *textRelease;
 @property (nonatomic, copy) NSString *textLoading;
+@property (nonatomic, retain) NSDate *lastUpdatedDate;
 
+- (NSString *)lastUpdatedString;
 - (void)addPullToRefreshHeader;
 - (void)startLoading;
 - (void)stopLoading;
