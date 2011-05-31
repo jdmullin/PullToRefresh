@@ -32,19 +32,57 @@
 
 #define REFRESH_HEADER_HEIGHT 52.0f
 
+@interface PullRefreshTableViewController()
+
+- (void)setUpLabels;
+
+@end
+
 
 @implementation PullRefreshTableViewController
 
-@synthesize textPull, textRelease, textLoading, refreshHeaderView, refreshLabel, refreshArrow, refreshSpinner;
+@synthesize textPull, textRelease, textLoading, refreshHeaderView, refreshLabel, updatedLabel, refreshArrow, refreshSpinner;
+
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        [self setUpLabels];
+    }
+    return self;
+}
 
 - (id)initWithStyle:(UITableViewStyle)style {
     self = [super initWithStyle:style];
-    if (self != nil) {
-        textPull = [[NSString alloc] initWithString:@"Pull down to refresh..."];
-        textRelease = [[NSString alloc] initWithString:@"Release to refresh..."];
-        textLoading = [[NSString alloc] initWithString:@"Loading..."];
+    if (self) {
+        [self setUpLabels];
     }
     return self;
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self setUpLabels];
+    }
+    return self;
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        [self setUpLabels];
+    }
+    return self;
+}
+
+- (void)setUpLabels
+{
+    textPull = [[NSString alloc] initWithString:@"Pull down to refresh..."];
+    textRelease = [[NSString alloc] initWithString:@"Release to refresh..."];
+    textLoading = [[NSString alloc] initWithString:@"Loading..."];
 }
 
 - (void)viewDidLoad {
