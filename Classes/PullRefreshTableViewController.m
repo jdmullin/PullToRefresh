@@ -52,7 +52,17 @@
     return self;
 }
 
-- (id)initWithStyle:(UITableViewStyle)style {
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        [self setUpLabels];
+    }
+    return self;
+}
+
+- (id)initWithStyle:(UITableViewStyle)style
+{
     self = [super initWithStyle:style];
     if (self) {
         [self setUpLabels];
