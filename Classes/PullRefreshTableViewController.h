@@ -29,6 +29,11 @@
 
 #import <UIKit/UIKit.h>
 
+typedef enum {
+    PullRefreshTableViewControllerThemeDefault,
+    PullRefreshTableViewControllerThemeEgo
+} PullRefreshTableViewControllerTheme;
+
 @interface PullRefreshTableViewController : UITableViewController {
     UIView *refreshHeaderView;
     UIView *refreshHeaderBackgroundFillerView;
@@ -42,6 +47,7 @@
     NSString *textRelease;
     NSString *textLoading;
     NSDate *lastUpdatedDate;
+    PullRefreshTableViewControllerTheme theme;
 }
 
 @property (nonatomic, retain) UIView *refreshHeaderView;
@@ -54,6 +60,7 @@
 @property (nonatomic, copy) NSString *textRelease;
 @property (nonatomic, copy) NSString *textLoading;
 @property (nonatomic, retain) NSDate *lastUpdatedDate;
+@property (nonatomic) PullRefreshTableViewControllerTheme theme;
 
 - (NSString *)lastUpdatedString;
 - (void)addPullToRefreshHeader;
