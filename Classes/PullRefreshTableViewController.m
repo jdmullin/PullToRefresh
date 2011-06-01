@@ -30,6 +30,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "PullRefreshTableViewController.h"
 
+#define REFRESH_HEADER_FILLER_HEIGHT 1000.0f
 #define REFRESH_HEADER_HEIGHT 52.0f
 
 @interface PullRefreshTableViewController()
@@ -41,7 +42,7 @@
 
 @implementation PullRefreshTableViewController
 
-@synthesize textPull, textRelease, textLoading, lastUpdatedDate, refreshHeaderView, refreshLabel, lastUpdatedLabel, refreshArrow, refreshSpinner;
+@synthesize textPull, textRelease, textLoading, lastUpdatedDate, refreshHeaderView, refreshHeaderBackgroundFillerView, refreshLabel, lastUpdatedLabel, refreshArrow, refreshSpinner;
 
 - (id)init
 {
@@ -92,7 +93,10 @@
 }
 
 - (void)addPullToRefreshHeader {
-    refreshHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0 - REFRESH_HEADER_HEIGHT, 320, REFRESH_HEADER_HEIGHT)];
+    refreshHeaderBackgroundFillerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0 - REFRESH_HEADER_FILLER_HEIGHT, 320, REFRESH_HEADER_FILLER_HEIGHT)];
+    refreshHeaderBackgroundFillerView.backgroundColor = [UIColor clearColor];
+    
+    refreshHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, REFRESH_HEADER_FILLER_HEIGHT - REFRESH_HEADER_HEIGHT, 320, REFRESH_HEADER_HEIGHT)];
     refreshHeaderView.backgroundColor = [UIColor clearColor];
 
     refreshLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0 + 3, 320, (REFRESH_HEADER_HEIGHT / 2) - 3)];
@@ -119,7 +123,8 @@
     [refreshHeaderView addSubview:lastUpdatedLabel];
     [refreshHeaderView addSubview:refreshArrow];
     [refreshHeaderView addSubview:refreshSpinner];
-    [self.tableView addSubview:refreshHeaderView];
+    [refreshHeaderBackgroundFillerView addSubview:refreshHeaderView];
+    [self.tableView addSubview:refreshHeaderBackgroundFillerView];
 }
     
 - (NSString *)lastUpdatedString
@@ -223,6 +228,7 @@
 
 - (void)dealloc {
     [refreshHeaderView release];
+    [refreshHeaderBackgroundFillerView release];
     [refreshLabel release];
     [lastUpdatedDate release];
     [lastUpdatedLabel release];

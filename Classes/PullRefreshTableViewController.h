@@ -31,6 +31,7 @@
 
 @interface PullRefreshTableViewController : UITableViewController {
     UIView *refreshHeaderView;
+    UIView *refreshHeaderBackgroundFillerView;
     UILabel *refreshLabel;
     UILabel *lastUpdatedLabel;
     UIImageView *refreshArrow;
@@ -44,6 +45,7 @@
 }
 
 @property (nonatomic, retain) UIView *refreshHeaderView;
+@property (nonatomic, retain) UIView *refreshHeaderBackgroundFillerView;
 @property (nonatomic, retain) UILabel *refreshLabel;
 @property (nonatomic, retain) UILabel *lastUpdatedLabel;
 @property (nonatomic, retain) UIImageView *refreshArrow;
