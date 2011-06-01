@@ -224,6 +224,8 @@
 - (void)dealloc {
     [refreshHeaderView release];
     [refreshLabel release];
+    [lastUpdatedDate release];
+    [lastUpdatedLabel release];
     [refreshArrow release];
     [refreshSpinner release];
     [textPull release];
