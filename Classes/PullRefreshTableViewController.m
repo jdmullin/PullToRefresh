@@ -193,12 +193,21 @@
     [self.tableView addSubview:loadMoreFooterView];
 }
 
+
+//Function to update the location of where the pullToLoadMore lives.
 - (void) updateLoadMoreFrame:(UIScrollView *)scrollView {
     NSLog(@"Updating the Frame");
     NSLog(@"scrollview frame height: %f", scrollView.frame.size.height);
     NSLog(@"scrollview contentSize height: %f", scrollView.contentSize.height);
-    loadMoreFooterView.frame = CGRectMake(0, scrollView.contentSize.height, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);
+    if(scrollView.contentSize.height<scrollView.frame.size.height){
 
+        loadMoreFooterView.frame = CGRectMake(0, scrollView.frame.size.height, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);
+    
+    }else{
+        
+        loadMoreFooterView.frame = CGRectMake(0, scrollView.contentSize.height, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);        
+
+    }
 }
 
 - (NSString *)lastUpdatedString
@@ -281,13 +290,15 @@
                 self.tableView.contentInset = UIEdgeInsetsZero;
             
             }else if( scrollView.contentOffset.y <= (REFRESH_HEADER_HEIGHT+scrollView.frame.size.height) ){
+
                 self.tableView.contentInset = UIEdgeInsetsMake(0, 0, (scrollView.contentOffset.y - scrollView.frame.size.height), 0);
+
             }
         }else if( isDragging && scrollView.contentOffset.y > (scrollView.contentSize.height - scrollView.frame.size.height)){
             float scrollViewHeight = scrollView.contentSize.height - scrollView.frame.size.height;
-            if(!updateLoadMoreFrame){
+            if(!updatedLoadMoreFrame){
                 [self updateLoadMoreFrame:scrollView];
-                updateLoadMoreFrame = TRUE;
+                updatedLoadMoreFrame = TRUE;
             }
             [UIView beginAnimations:nil context:NULL];
             if (scrollView.contentOffset.y > (REFRESH_HEADER_HEIGHT + scrollViewHeight)) {
@@ -324,7 +335,7 @@
         }
     }
     //Do this to stop the position of load more frame because otherwise constant checks
-    updateLoadMoreFrame = FALSE;
+    updatedLoadMoreFrame = FALSE;
 }
 
 - (void)startLoading {

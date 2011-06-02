@@ -40,7 +40,7 @@ typedef enum {
     BOOL isLoading;
 
     BOOL loadMoreIsLoading;
-    BOOL updateLoadMoreFrame;
+    BOOL updatedLoadMoreFrame;
 
     @private
         BOOL enablePullToRefresh;
