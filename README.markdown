@@ -1,6 +1,6 @@
 PullToRefresh
 
-A simple iPhone TableViewController for adding pull-to-refresh functionality.
+A simple iPhone TableViewController for adding pull-to-refresh functionality and pull-to-load-more.
 
 ![](http://s3.amazonaws.com/leah.baconfile.com/blog/refresh-small-1.png)
 ![](http://s3.amazonaws.com/leah.baconfile.com/blog/refresh-small-2.png)
@@ -25,3 +25,10 @@ and [arrow.png](http://github.com/leah/PullToRefresh/raw/master/arrow.png) into 
 
 
 Enjoy!
+
+
+Things to be added still:
+* Function for callback when a tableView had rotated to update positioning/width
+* Configuration options so that you can load each independently
+* Theme support for the bottom
+* Correct alignment for horizontal views (centering of the text, primarily)
