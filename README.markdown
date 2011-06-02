@@ -28,7 +28,8 @@ Enjoy!
 
 
 Things to be added still:
-* Function for callback when a tableView had rotated to update positioning/width
+* Add functionality to check that loadMore is below the fold
 * Configuration options so that you can load each independently
+* Function for callback when a tableView had rotated to update positioning/width
 * Theme support for the bottom
 * Correct alignment for horizontal views (centering of the text, primarily)
