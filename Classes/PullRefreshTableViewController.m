@@ -40,7 +40,7 @@
 
 - (void)setUpLabels;
 - (void)updateTheme;
-
+- (void)updateLowestContentOffset;
 @end
 
 
@@ -117,9 +117,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (enablePullToRefresh) {
+        isLoading = NO;
         [self addPullToRefreshHeader];
     }
     if(enablePullToLoadMore){
+        loadMoreIsLoading = NO;
+        lowestContentOffset = 0.0;
+        if (self.tableView.contentSize.height > self.tableView.frame.size.height) {
+            lowestContentOffset = self.tableView.contentSize.height - self.tableView.frame.size.height;
+        }
         [self addPullToLoadMoreFooter];
     }
 }
@@ -167,7 +173,7 @@
 }
 
 - (void)addPullToLoadMoreFooter {
-    loadMoreFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, DEVICE_HEIGHT, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT)];
+    loadMoreFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, self.tableView.frame.size.height+lowestContentOffset, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT)];
     loadMoreFooterView.backgroundColor = [UIColor clearColor];
     
     loadMoreLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0 + 8, self.tableView.frame.size.width, (REFRESH_HEADER_HEIGHT / 2) - 3)];
@@ -192,22 +198,16 @@
     [loadMoreFooterView addSubview:loadMoreSpinner];
     [self.tableView addSubview:loadMoreFooterView];
 }
-
+#pragma mark - updates to information
 
 //Function to update the location of where the pullToLoadMore lives.
 - (void) updateLoadMoreFrame:(UIScrollView *)scrollView {
     NSLog(@"Updating the Frame");
     NSLog(@"scrollview frame height: %f", scrollView.frame.size.height);
     NSLog(@"scrollview contentSize height: %f", scrollView.contentSize.height);
-    if(scrollView.contentSize.height<scrollView.frame.size.height){
 
-        loadMoreFooterView.frame = CGRectMake(0, scrollView.frame.size.height, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);
-    
-    }else{
-        
-        loadMoreFooterView.frame = CGRectMake(0, scrollView.contentSize.height, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);        
-
-    }
+    //self.tableView.frame.size.height+lowestContentOffset will always be the lowest possible location
+    loadMoreFooterView.frame = CGRectMake(0, self.tableView.frame.size.height+lowestContentOffset, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);
 }
 
 - (NSString *)lastUpdatedString
@@ -225,6 +225,13 @@
     
     return [NSString stringWithFormat:@"Last Updated: %@",dateString];
 }
+
+-(void) reloadData{
+    [self.tableView reloadData];
+    [self updateLowestContentOffset];
+    [self updateLoadMoreFrame:self.tableView];
+}
+
 #pragma mark - themes
 - (void)setTheme:(PullRefreshTableViewControllerTheme)aTheme
 {
@@ -254,6 +261,7 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    NSLog(@"%f", scrollView.contentOffset.y);
     if(enablePullToRefresh){
         if (isLoading) {
             // Update the content inset, good for section headers
@@ -285,23 +293,33 @@
     }
     if (enablePullToLoadMore) {
         if (loadMoreIsLoading) {
-            if(scrollView.contentOffset.y < scrollView.frame.size.height){
+            if(scrollView.contentOffset.y < lowestContentOffset){
 
                 self.tableView.contentInset = UIEdgeInsetsZero;
             
-            }else if( scrollView.contentOffset.y <= (REFRESH_HEADER_HEIGHT+scrollView.frame.size.height) ){
+            }else if( scrollView.contentOffset.y <= (REFRESH_HEADER_HEIGHT+ lowestContentOffset)){
+               
+                //Checking for data not entirely loading the table
 
-                self.tableView.contentInset = UIEdgeInsetsMake(0, 0, (scrollView.contentOffset.y - scrollView.frame.size.height), 0);
+                //if (lowestContentOffset == 0) {
+                    //This should be a negative number, but not working. something about tables having infinite table entries if dont fit
+                    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, (lowestContentOffset + scrollView.frame.size.height), 0);
+                    
+                //} else {
+                    
+                //    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, (scrollView.contentOffset.y - scrollView.frame.size.height), 0);
+                
+                //}
 
             }
-        }else if( isDragging && scrollView.contentOffset.y > (scrollView.contentSize.height - scrollView.frame.size.height)){
-            float scrollViewHeight = scrollView.contentSize.height - scrollView.frame.size.height;
+        }else if( isDragging && scrollView.contentOffset.y > (lowestContentOffset)){
+
             if(!updatedLoadMoreFrame){
                 [self updateLoadMoreFrame:scrollView];
                 updatedLoadMoreFrame = TRUE;
             }
             [UIView beginAnimations:nil context:NULL];
-            if (scrollView.contentOffset.y > (REFRESH_HEADER_HEIGHT + scrollViewHeight)) {
+            if (scrollView.contentOffset.y > (REFRESH_HEADER_HEIGHT + lowestContentOffset)) {
                 //User is scrolling below the footer load more cell
                 loadMoreLabel.text = self.loadMoreTextRelease;
 
@@ -320,22 +338,26 @@
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     if (enablePullToLoadMore && !loadMoreIsLoading){
+        NSLog(@"Loading more from bottom started");
         //If top is loading, need to check for the bottom
         isDragging = NO;
-        if (scrollView.contentOffset.y >= (REFRESH_HEADER_HEIGHT+(scrollView.contentSize.height - scrollView.frame.size.height))) {
+
+        if (scrollView.contentOffset.y >= (REFRESH_HEADER_HEIGHT+lowestContentOffset)) {
             [self startLoadingFooter];
+            NSLog(@"Loading more from bottom called");
         }
+        //Do this to stop the position of load more frame because otherwise constant checks
+        updatedLoadMoreFrame = FALSE;
     }
 
     if(enablePullToRefresh && !isLoading){
         isDragging = NO;
         if (scrollView.contentOffset.y <= -REFRESH_HEADER_HEIGHT) {
             // Released above the header
+            NSLog(@"Loading more from top started");
             [self startLoading];
         }
     }
-    //Do this to stop the position of load more frame because otherwise constant checks
-    updatedLoadMoreFrame = FALSE;
 }
 
 - (void)startLoading {
@@ -376,6 +398,7 @@
     [refreshSpinner stopAnimating];
 }
 
+#pragma mark - loadMore start/stop loading
 
 - (void)startLoadingFooter {
     loadMoreIsLoading = YES;
@@ -383,7 +406,7 @@
     // Show the header
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationDuration:0.3];
-    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, REFRESH_HEADER_HEIGHT, 0);
+    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, lowestContentOffset + REFRESH_HEADER_HEIGHT, 0);
     loadMoreLabel.text = self.loadMoreTextLoading;
     loadMoreArrow.hidden = YES;
     [loadMoreSpinner startAnimating];
@@ -454,5 +477,12 @@
 -(void) adjustTableRotate{
 //    refreshHeaderView.frame.size.width = self.tableView.frame.size;
 }
-
+-(void) updateLowestContentOffset{
+    NSLog(@"lowestContentOffset = %f", lowestContentOffset);
+    lowestContentOffset = 0.0;
+    if (self.tableView.contentSize.height > self.tableView.frame.size.height) {
+        lowestContentOffset = self.tableView.contentSize.height - self.tableView.frame.size.height;
+    }
+    NSLog(@"lowestContentOffset = %f", lowestContentOffset);
+}
 @end

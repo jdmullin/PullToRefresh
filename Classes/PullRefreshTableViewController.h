@@ -41,6 +41,7 @@ typedef enum {
 
     BOOL loadMoreIsLoading;
     BOOL updatedLoadMoreFrame;
+    CGFloat lowestContentOffset;
 
     @private
         BOOL enablePullToRefresh;
@@ -87,5 +88,7 @@ typedef enum {
 
 - (void)refresh;
 - (void) moreLoaded;
+
+-(void) reloadData;
 
 @end

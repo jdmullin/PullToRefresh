@@ -52,7 +52,7 @@
     [items insertObject:[NSString stringWithFormat:@"%@", now] atIndex:0];
     self.lastUpdatedDate = [NSDate date];
 
-    [self.tableView reloadData];
+    [self reloadData];
 
     [self stopLoading];
 }
