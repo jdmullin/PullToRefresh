@@ -30,17 +30,13 @@
 #import <UIKit/UIKit.h>
 
 @interface PullRefreshTableViewController : UITableViewController {
-    UIView *refreshHeaderView;
-    UILabel *refreshLabel;
-    UILabel *lastUpdatedLabel;
-    UIImageView *refreshArrow;
-    UIActivityIndicatorView *refreshSpinner;
     BOOL isDragging;
     BOOL isLoading;
-    NSString *textPull;
-    NSString *textRelease;
-    NSString *textLoading;
-    NSDate *lastUpdatedDate;
+
+    BOOL loadMoreIsLoading;
+    BOOL updateLoadMoreFrame;
+
+
 }
 
 @property (nonatomic, retain) UIView *refreshHeaderView;
@@ -53,10 +49,30 @@
 @property (nonatomic, copy) NSString *textLoading;
 @property (nonatomic, retain) NSDate *lastUpdatedDate;
 
+
+@property (nonatomic, retain) UIView *loadMoreFooterView;
+@property (nonatomic, retain) UILabel *loadMoreLabel;
+@property (nonatomic, retain) UILabel *lastLoadedLabel;
+@property (nonatomic, retain) UIImageView *loadMoreArrow;
+@property (nonatomic, retain) UIActivityIndicatorView *loadMoreSpinner;
+@property (nonatomic, copy) NSString *loadMoreTextPull;
+@property (nonatomic, copy) NSString *loadMoreTextRelease;
+@property (nonatomic, copy) NSString *loadMoreTextLoading;
+
+
 - (NSString *)lastUpdatedString;
+
 - (void)addPullToRefreshHeader;
+- (void)addPullToLoadMoreFooter;
+
 - (void)startLoading;
 - (void)stopLoading;
+
+- (void)startLoadingFooter;
+- (void)stopLoadingFooter;
+
+
 - (void)refresh;
+- (void) moreLoaded;
 
 @end
