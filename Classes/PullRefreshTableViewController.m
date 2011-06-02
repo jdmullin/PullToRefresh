@@ -30,6 +30,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "PullRefreshTableViewController.h"
 
+#define REFRESH_HEADER_FILLER_HEIGHT 1000.0f
 #define REFRESH_HEADER_HEIGHT 52.0f
 
 //Hardcoded to known contentSize, so the arrow shows up when you initially scroll, otherwise set really large
@@ -38,13 +39,14 @@
 @interface PullRefreshTableViewController()
 
 - (void)setUpLabels;
+- (void)updateTheme;
 
 @end
 
 
 @implementation PullRefreshTableViewController
 
-@synthesize textPull, textRelease, textLoading, lastUpdatedDate, refreshHeaderView, refreshLabel, lastUpdatedLabel, refreshArrow, refreshSpinner;
+@synthesize textPull, textRelease, textLoading, lastUpdatedDate, refreshHeaderView, refreshHeaderBackgroundFillerView, refreshLabel, lastUpdatedLabel, refreshArrow, refreshSpinner,theme;
 @synthesize loadMoreTextPull,loadMoreTextRelease,loadMoreTextLoading,lastLoadedLabel, loadMoreFooterView, loadMoreLabel, loadMoreArrow, loadMoreSpinner;
 
 - (id)init
@@ -102,7 +104,13 @@
 - (void)addPullToRefreshHeader {
    
     
-    refreshHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0 - REFRESH_HEADER_HEIGHT, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT)];
+    refreshHeaderBackgroundFillerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0 - REFRESH_HEADER_FILLER_HEIGHT, 320, REFRESH_HEADER_FILLER_HEIGHT)];
+    refreshHeaderBackgroundFillerView.backgroundColor = [UIColor clearColor];
+    
+
+    refreshHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, REFRESH_HEADER_FILLER_HEIGHT - REFRESH_HEADER_HEIGHT, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT)];
+
+
     refreshHeaderView.backgroundColor = [UIColor clearColor];
 
     refreshLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0 + 3, self.tableView.frame.size.width, (REFRESH_HEADER_HEIGHT / 2) - 3)];
@@ -124,11 +132,15 @@
     refreshSpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     refreshSpinner.frame = CGRectMake((REFRESH_HEADER_HEIGHT - 20) / 2, (REFRESH_HEADER_HEIGHT - 20) / 2, 20, 20);
     refreshSpinner.hidesWhenStopped = YES;
+    
+    [self updateTheme];
+
     [refreshHeaderView addSubview:refreshLabel];
     [refreshHeaderView addSubview:lastUpdatedLabel];
     [refreshHeaderView addSubview:refreshArrow];
     [refreshHeaderView addSubview:refreshSpinner];
-    [self.tableView addSubview:refreshHeaderView];
+    [refreshHeaderBackgroundFillerView addSubview:refreshHeaderView];
+    [self.tableView addSubview:refreshHeaderBackgroundFillerView];
 }
 
 - (void)addPullToLoadMoreFooter {
@@ -180,6 +192,26 @@
     }
     
     return [NSString stringWithFormat:@"Last Updated: %@",dateString];
+}
+
+- (void)setTheme:(PullRefreshTableViewControllerTheme)aTheme
+{
+    theme = aTheme;
+    [self updateTheme];
+}
+
+- (void)updateTheme
+{
+    if (PullRefreshTableViewControllerThemeEgo == theme) {
+        refreshHeaderBackgroundFillerView.backgroundColor = [UIColor colorWithRed:226.0/255.0 green:231.0/255.0 blue:237.0/255.0 alpha:1.0];
+        refreshLabel.textColor = [UIColor colorWithRed:87.0/255.0 green:108.0/255.0 blue:137.0/255.0 alpha:1.0];
+        lastUpdatedLabel.textColor = [UIColor colorWithRed:87.0/255.0 green:108.0/255.0 blue:137.0/255.0 alpha:1.0];
+    }
+    else {
+        refreshHeaderBackgroundFillerView.backgroundColor = [UIColor clearColor];
+        refreshLabel.textColor = [UIColor blackColor];
+        lastUpdatedLabel.textColor = [UIColor blackColor];
+    }
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
@@ -360,7 +392,10 @@
 
 - (void)dealloc {
     [refreshHeaderView release];
+    [refreshHeaderBackgroundFillerView release];
     [refreshLabel release];
+    [lastUpdatedDate release];
+    [lastUpdatedLabel release];
     [refreshArrow release];
     [refreshSpinner release];
     [textPull release];

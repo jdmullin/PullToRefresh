@@ -29,17 +29,21 @@
 
 #import <UIKit/UIKit.h>
 
+typedef enum {
+    PullRefreshTableViewControllerThemeDefault,
+    PullRefreshTableViewControllerThemeEgo
+} PullRefreshTableViewControllerTheme;
+
 @interface PullRefreshTableViewController : UITableViewController {
     BOOL isDragging;
     BOOL isLoading;
 
     BOOL loadMoreIsLoading;
     BOOL updateLoadMoreFrame;
-
-
 }
 
 @property (nonatomic, retain) UIView *refreshHeaderView;
+@property (nonatomic, retain) UIView *refreshHeaderBackgroundFillerView;
 @property (nonatomic, retain) UILabel *refreshLabel;
 @property (nonatomic, retain) UILabel *lastUpdatedLabel;
 @property (nonatomic, retain) UIImageView *refreshArrow;
@@ -48,6 +52,7 @@
 @property (nonatomic, copy) NSString *textRelease;
 @property (nonatomic, copy) NSString *textLoading;
 @property (nonatomic, retain) NSDate *lastUpdatedDate;
+@property (nonatomic) PullRefreshTableViewControllerTheme theme;
 
 
 @property (nonatomic, retain) UIView *loadMoreFooterView;
