@@ -46,8 +46,11 @@
 
 @implementation PullRefreshTableViewController
 
+
+
 @synthesize textPull, textRelease, textLoading, lastUpdatedDate, refreshHeaderView, refreshHeaderBackgroundFillerView, refreshLabel, lastUpdatedLabel, refreshArrow, refreshSpinner,theme;
 @synthesize loadMoreTextPull,loadMoreTextRelease,loadMoreTextLoading,lastLoadedLabel, loadMoreFooterView, loadMoreLabel, loadMoreArrow, loadMoreSpinner;
+
 
 - (id)init
 {
@@ -55,6 +58,8 @@
     if (self) {
         [self setUpLabels];
     }
+    enablePullToRefresh = TRUE;
+    enablePullToLoadMore = TRUE;
     return self;
 }
 
@@ -64,6 +69,8 @@
     if (self) {
         [self setUpLabels];
     }
+    enablePullToRefresh = TRUE;
+    enablePullToLoadMore = TRUE;
     return self;
 }
 
@@ -73,6 +80,8 @@
     if (self) {
         [self setUpLabels];
     }
+    enablePullToRefresh = TRUE;
+    enablePullToLoadMore = TRUE;
     return self;
 }
 
@@ -82,9 +91,19 @@
     if (self) {
         [self setUpLabels];
     }
+    enablePullToRefresh = TRUE;
+    enablePullToLoadMore = TRUE;
     return self;
 }
-
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil pullToRefresh:(BOOL) pullRefresh pullToLoadMore:(BOOL) pullLoad{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        [self setUpLabels];
+    }
+    enablePullToRefresh = pullRefresh;
+    enablePullToLoadMore = pullLoad;
+    return self;
+}
 - (void)setUpLabels
 {
     textPull = [[NSString alloc] initWithString:@"Pull down to refresh..."];
@@ -97,8 +116,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self addPullToRefreshHeader];
-    [self addPullToLoadMoreFooter];
+    if (enablePullToRefresh) {
+        [self addPullToRefreshHeader];
+    }
+    if(enablePullToLoadMore){
+        [self addPullToLoadMoreFooter];
+    }
 }
 
 - (void)addPullToRefreshHeader {
@@ -193,7 +216,7 @@
     
     return [NSString stringWithFormat:@"Last Updated: %@",dateString];
 }
-
+#pragma mark - themes
 - (void)setTheme:(PullRefreshTableViewControllerTheme)aTheme
 {
     theme = aTheme;
@@ -213,7 +236,7 @@
         lastUpdatedLabel.textColor = [UIColor blackColor];
     }
 }
-
+#pragma mark - scrolling detection
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
     if (isLoading) return;
     
@@ -222,82 +245,85 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (isLoading) {
-        // Update the content inset, good for section headers
-        if (scrollView.contentOffset.y > 0){
-                self.tableView.contentInset = UIEdgeInsetsZero;
-        }else if (scrollView.contentOffset.y >= -REFRESH_HEADER_HEIGHT){
+    if(enablePullToRefresh){
+        if (isLoading) {
+            // Update the content inset, good for section headers
+            if (scrollView.contentOffset.y > 0){
+                    self.tableView.contentInset = UIEdgeInsetsZero;
+            }else if (scrollView.contentOffset.y >= -REFRESH_HEADER_HEIGHT){
+                
+                self.tableView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
+
+            }
+        } else if (isDragging && scrollView.contentOffset.y < 0) {
+
+            // Update the arrow direction and label
+            [UIView beginAnimations:nil context:NULL];
+            if (scrollView.contentOffset.y < -REFRESH_HEADER_HEIGHT) {
             
-            self.tableView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
-
-        }
-    } else if (isDragging && scrollView.contentOffset.y < 0) {
-
-        // Update the arrow direction and label
-        [UIView beginAnimations:nil context:NULL];
-        if (scrollView.contentOffset.y < -REFRESH_HEADER_HEIGHT) {
-        
-            // User is scrolling above the header
-            refreshLabel.text = self.textRelease;
-            [refreshArrow layer].transform = CATransform3DMakeRotation(M_PI, 0, 0, 1);
-        
-        } else { // User is scrolling somewhere within the header
+                // User is scrolling above the header
+                refreshLabel.text = self.textRelease;
+                [refreshArrow layer].transform = CATransform3DMakeRotation(M_PI, 0, 0, 1);
             
-            refreshLabel.text = self.textPull;
-            [refreshArrow layer].transform = CATransform3DMakeRotation(M_PI * 2, 0, 0, 1);
+            } else { // User is scrolling somewhere within the header
+                
+                refreshLabel.text = self.textPull;
+                [refreshArrow layer].transform = CATransform3DMakeRotation(M_PI * 2, 0, 0, 1);
 
+            }
+            [UIView commitAnimations];
         }
-        [UIView commitAnimations];
     }
-    //NSLog(@"scrollView.contentOffset.y: %f", scrollView.contentOffset.y);
-    //NSLog(@"scrollView.contentSize.hei: %f", scrollView.contentSize.height);
-    //NSLog(@"scrollView.frame.size.heig: %f", scrollView.frame.size.height);
-    if (loadMoreIsLoading) {
-        if(scrollView.contentOffset.y < scrollView.frame.size.height){
+    if (enablePullToLoadMore) {
+        if (loadMoreIsLoading) {
+            if(scrollView.contentOffset.y < scrollView.frame.size.height){
 
-            self.tableView.contentInset = UIEdgeInsetsZero;
-        
-        }else if( scrollView.contentOffset.y <= (REFRESH_HEADER_HEIGHT+scrollView.frame.size.height) ){
-            self.tableView.contentInset = UIEdgeInsetsMake(0, 0, (scrollView.contentOffset.y - scrollView.frame.size.height), 0);
-        }
-    }else if( isDragging && scrollView.contentOffset.y > (scrollView.contentSize.height - scrollView.frame.size.height)){
-        float scrollViewHeight = scrollView.contentSize.height - scrollView.frame.size.height;
-        if(!updateLoadMoreFrame){
-            [self updateLoadMoreFrame:scrollView];
-            updateLoadMoreFrame = TRUE;
-        }
-        [UIView beginAnimations:nil context:NULL];
-        if (scrollView.contentOffset.y > (REFRESH_HEADER_HEIGHT + scrollViewHeight)) {
-            //User is scrolling below the footer load more cell
-            loadMoreLabel.text = self.loadMoreTextRelease;
-
-            [loadMoreArrow layer].transform = CATransform3DMakeRotation(M_PI * 2, 0, 0, 1);
-
-        }else{
-            //User is in the footer load more cell
-            loadMoreLabel.text = self.loadMoreTextPull;
+                self.tableView.contentInset = UIEdgeInsetsZero;
             
-            [loadMoreArrow layer].transform = CATransform3DMakeRotation(M_PI, 0, 0, 1);
+            }else if( scrollView.contentOffset.y <= (REFRESH_HEADER_HEIGHT+scrollView.frame.size.height) ){
+                self.tableView.contentInset = UIEdgeInsetsMake(0, 0, (scrollView.contentOffset.y - scrollView.frame.size.height), 0);
+            }
+        }else if( isDragging && scrollView.contentOffset.y > (scrollView.contentSize.height - scrollView.frame.size.height)){
+            float scrollViewHeight = scrollView.contentSize.height - scrollView.frame.size.height;
+            if(!updateLoadMoreFrame){
+                [self updateLoadMoreFrame:scrollView];
+                updateLoadMoreFrame = TRUE;
+            }
+            [UIView beginAnimations:nil context:NULL];
+            if (scrollView.contentOffset.y > (REFRESH_HEADER_HEIGHT + scrollViewHeight)) {
+                //User is scrolling below the footer load more cell
+                loadMoreLabel.text = self.loadMoreTextRelease;
+
+                [loadMoreArrow layer].transform = CATransform3DMakeRotation(M_PI * 2, 0, 0, 1);
+
+            }else{
+                //User is in the footer load more cell
+                loadMoreLabel.text = self.loadMoreTextPull;
+                
+                [loadMoreArrow layer].transform = CATransform3DMakeRotation(M_PI, 0, 0, 1);
+            }
+            [UIView commitAnimations];
         }
-        [UIView commitAnimations];
     }
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
-    if (!loadMoreIsLoading){
+    if (enablePullToLoadMore && !loadMoreIsLoading){
         //If top is loading, need to check for the bottom
         isDragging = NO;
         if (scrollView.contentOffset.y >= (REFRESH_HEADER_HEIGHT+(scrollView.contentSize.height - scrollView.frame.size.height))) {
             [self startLoadingFooter];
         }
     }
-    if(!isLoading){
+
+    if(enablePullToRefresh && !isLoading){
         isDragging = NO;
         if (scrollView.contentOffset.y <= -REFRESH_HEADER_HEIGHT) {
             // Released above the header
             [self startLoading];
         }
     }
+    //Do this to stop the position of load more frame because otherwise constant checks
     updateLoadMoreFrame = FALSE;
 }
 
@@ -386,6 +412,7 @@
 }
 
 -(void) moreLoaded{
+
     [self performSelector:@selector(stopLoadingFooter) withObject:nil afterDelay:2.0];
     
 }

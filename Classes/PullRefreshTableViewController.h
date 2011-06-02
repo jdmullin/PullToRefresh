@@ -35,11 +35,17 @@ typedef enum {
 } PullRefreshTableViewControllerTheme;
 
 @interface PullRefreshTableViewController : UITableViewController {
+
     BOOL isDragging;
     BOOL isLoading;
 
     BOOL loadMoreIsLoading;
     BOOL updateLoadMoreFrame;
+
+    @private
+        BOOL enablePullToRefresh;
+        BOOL enablePullToLoadMore;
+
 }
 
 @property (nonatomic, retain) UIView *refreshHeaderView;
@@ -64,6 +70,8 @@ typedef enum {
 @property (nonatomic, copy) NSString *loadMoreTextRelease;
 @property (nonatomic, copy) NSString *loadMoreTextLoading;
 
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil pullToRefresh:(BOOL) pullRefresh pullToLoadMore:(BOOL) pullLoad;
 
 - (NSString *)lastUpdatedString;
 
