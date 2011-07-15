@@ -6,3 +6,11 @@ build/*
 # osx
 .DS_Store
 profile
+
+PullToRefresh.xcodeproj/xcuserdata/jeremym.xcuserdatad/xcschemes/PullToRefresh.xcscheme
+
+PullToRefresh.xcodeproj/project.xcworkspace/xcuserdata/jeremym.xcuserdatad/UserInterfaceState.xcuserstate
+
+PullToRefresh.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+
+.gitignore.swp
