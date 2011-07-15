@@ -445,6 +445,7 @@
     loadMoreLabel.text = self.loadMoreTextPull;
     loadMoreArrow.hidden = NO;
     [loadMoreSpinner stopAnimating];
+    [loadMoreFooterView setHidden:YES];
 }
 
 - (void)refresh {
@@ -456,6 +457,7 @@
 
 -(void) moreLoaded{
     // This is just a demo. Override this method with your custom reload action.
+    // Don't forget to call stopLoadingFooter at the end.
     [self performSelector:@selector(stopLoadingFooter) withObject:nil afterDelay:2.0];    
 }
 
