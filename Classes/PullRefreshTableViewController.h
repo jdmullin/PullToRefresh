@@ -40,8 +40,7 @@ typedef enum {
     BOOL isLoading;
 
     BOOL loadMoreIsLoading;
-    BOOL updatedLoadMoreFrame;
-    CGFloat lowestContentOffset;
+    BOOL updatedLoadMoreFrame;    
 
     @private
         BOOL enablePullToRefresh;

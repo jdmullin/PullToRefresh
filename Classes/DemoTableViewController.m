@@ -16,6 +16,10 @@
 
     self.title = @"Pull to Refresh";
     items = [[NSMutableArray alloc] initWithObjects:@"What time is it?", nil];
+    
+    // Use this to change the default size of the table to test paging
+    for ( int i = 0; i < 11; i++ )
+        [items addObject: [NSString stringWithFormat:@"Item %d", i]];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -44,17 +48,30 @@
     [self performSelector:@selector(addItem) withObject:nil afterDelay:2.0];
 }
 
-- (void)addItem {
+- (void)addItem {    
     // Add a new time
     NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
     [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
     NSString *now = [dateFormatter stringFromDate:[NSDate date]];
     [items insertObject:[NSString stringWithFormat:@"%@", now] atIndex:0];
     self.lastUpdatedDate = [NSDate date];
-
     [self reloadData];
-
     [self stopLoading];
+}
+
+- (void)moreLoaded {
+    [self performSelector:@selector(addFooterItem) withObject:nil afterDelay:2.0];        
+}
+
+- (void)addFooterItem {
+    // Add a new time
+    NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+    [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+    NSString *now = [dateFormatter stringFromDate:[NSDate date]];
+    [items addObject:[NSString stringWithFormat:@"%@", now]];
+    self.lastUpdatedDate = [NSDate date];
+    [self reloadData];
+    [self stopLoadingFooter];
 }
 
 - (void)dealloc {

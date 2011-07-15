@@ -40,7 +40,6 @@
 
 - (void)setUpLabels;
 - (void)updateTheme;
-- (void)updateLowestContentOffset;
 @end
 
 
@@ -122,12 +121,20 @@
     }
     if(enablePullToLoadMore){
         loadMoreIsLoading = NO;
-        lowestContentOffset = 0.0;
-        if (self.tableView.contentSize.height > self.tableView.frame.size.height) {
-            lowestContentOffset = self.tableView.contentSize.height - self.tableView.frame.size.height;
-        }
         [self addPullToLoadMoreFooter];
     }
+}
+
+-(CGFloat) lowestContentOffset{
+    if (self.tableView.contentSize.height > self.tableView.frame.size.height) 
+        return self.tableView.contentSize.height - self.tableView.frame.size.height;
+    else
+        return 0.0;
+}
+
+- (BOOL)belowContent:(UIScrollView*)scrollView {
+    int offset = scrollView.contentSize.height - scrollView.frame.size.height;
+    return ( ( scrollView.contentOffset.y > 0 ) && ( ( offset < 0 ) || ( scrollView.contentOffset.y > offset ) ) );
 }
 
 - (void)addPullToRefreshHeader {
@@ -173,7 +180,7 @@
 }
 
 - (void)addPullToLoadMoreFooter {
-    loadMoreFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, self.tableView.frame.size.height+lowestContentOffset, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT)];
+    loadMoreFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, self.tableView.frame.size.height+ [self lowestContentOffset], self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT)];
     loadMoreFooterView.backgroundColor = [UIColor clearColor];
     
     loadMoreLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0 + 8, self.tableView.frame.size.width, (REFRESH_HEADER_HEIGHT / 2) - 3)];
@@ -193,6 +200,8 @@
     loadMoreSpinner.frame = CGRectMake((REFRESH_HEADER_HEIGHT - 20) / 2, (REFRESH_HEADER_HEIGHT - 20) / 2, 20, 20);
     loadMoreSpinner.hidesWhenStopped = YES;
     
+    [loadMoreFooterView setHidden:YES];
+    
     [loadMoreFooterView addSubview:loadMoreLabel];
     [loadMoreFooterView addSubview:loadMoreArrow];
     [loadMoreFooterView addSubview:loadMoreSpinner];
@@ -207,7 +216,7 @@
     NSLog(@"scrollview contentSize height: %f", scrollView.contentSize.height);
 
     //self.tableView.frame.size.height+lowestContentOffset will always be the lowest possible location
-    loadMoreFooterView.frame = CGRectMake(0, self.tableView.frame.size.height+lowestContentOffset, self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);
+    loadMoreFooterView.frame = CGRectMake(0, self.tableView.frame.size.height+[self lowestContentOffset], self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);
 }
 
 - (NSString *)lastUpdatedString
@@ -228,7 +237,6 @@
 
 -(void) reloadData{
     [self.tableView reloadData];
-    [self updateLowestContentOffset];
     [self updateLoadMoreFrame:self.tableView];
 }
 
@@ -293,17 +301,17 @@
     }
     if (enablePullToLoadMore) {
         if (loadMoreIsLoading) {
-            if(scrollView.contentOffset.y < lowestContentOffset){
+            if(scrollView.contentOffset.y < [self lowestContentOffset]){
 
                 self.tableView.contentInset = UIEdgeInsetsZero;
             
-            }else if( scrollView.contentOffset.y <= (REFRESH_HEADER_HEIGHT+ lowestContentOffset)){
+            }else if( scrollView.contentOffset.y <= (REFRESH_HEADER_HEIGHT+ [self lowestContentOffset])){
                
                 //Checking for data not entirely loading the table
 
                 //if (lowestContentOffset == 0) {
                     //This should be a negative number, but not working. something about tables having infinite table entries if dont fit
-                    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, (lowestContentOffset + scrollView.frame.size.height), 0);
+                    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, ([self lowestContentOffset] + scrollView.frame.size.height), 0);
                     
                 //} else {
                     
@@ -312,14 +320,15 @@
                 //}
 
             }
-        }else if( isDragging && scrollView.contentOffset.y > (lowestContentOffset)){
+        }else if( isDragging && [self belowContent:scrollView] ){
 
             if(!updatedLoadMoreFrame){
                 [self updateLoadMoreFrame:scrollView];
                 updatedLoadMoreFrame = TRUE;
+                [loadMoreFooterView setHidden:NO];
             }
             [UIView beginAnimations:nil context:NULL];
-            if (scrollView.contentOffset.y > (REFRESH_HEADER_HEIGHT + lowestContentOffset)) {
+            if (scrollView.contentOffset.y > (REFRESH_HEADER_HEIGHT + [self lowestContentOffset])) {
                 //User is scrolling below the footer load more cell
                 loadMoreLabel.text = self.loadMoreTextRelease;
 
@@ -336,13 +345,13 @@
     }
 }
 
+
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
-    if (enablePullToLoadMore && !loadMoreIsLoading){
-        NSLog(@"Loading more from bottom started");
+    if (enablePullToLoadMore && !loadMoreIsLoading){        
         //If top is loading, need to check for the bottom
         isDragging = NO;
-
-        if (scrollView.contentOffset.y >= (REFRESH_HEADER_HEIGHT+lowestContentOffset)) {
+        
+        if (scrollView.contentOffset.y >= (REFRESH_HEADER_HEIGHT+[self lowestContentOffset])) {
             [self startLoadingFooter];
             NSLog(@"Loading more from bottom called");
         }
@@ -406,7 +415,7 @@
     // Show the header
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationDuration:0.3];
-    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, lowestContentOffset + REFRESH_HEADER_HEIGHT, 0);
+    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, [self lowestContentOffset] + REFRESH_HEADER_HEIGHT, 0);
     loadMoreLabel.text = self.loadMoreTextLoading;
     loadMoreArrow.hidden = YES;
     [loadMoreSpinner startAnimating];
@@ -446,9 +455,8 @@
 }
 
 -(void) moreLoaded{
-
-    [self performSelector:@selector(stopLoadingFooter) withObject:nil afterDelay:2.0];
-    
+    // This is just a demo. Override this method with your custom reload action.
+    [self performSelector:@selector(stopLoadingFooter) withObject:nil afterDelay:2.0];    
 }
 
 - (void)dealloc {
@@ -474,15 +482,5 @@
     [super dealloc];
 }
 
--(void) adjustTableRotate{
-//    refreshHeaderView.frame.size.width = self.tableView.frame.size;
-}
--(void) updateLowestContentOffset{
-    NSLog(@"lowestContentOffset = %f", lowestContentOffset);
-    lowestContentOffset = 0.0;
-    if (self.tableView.contentSize.height > self.tableView.frame.size.height) {
-        lowestContentOffset = self.tableView.contentSize.height - self.tableView.frame.size.height;
-    }
-    NSLog(@"lowestContentOffset = %f", lowestContentOffset);
-}
+
 @end
