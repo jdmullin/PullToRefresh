@@ -211,10 +211,6 @@
 
 //Function to update the location of where the pullToLoadMore lives.
 - (void) updateLoadMoreFrame:(UIScrollView *)scrollView {
-    NSLog(@"Updating the Frame");
-    NSLog(@"scrollview frame height: %f", scrollView.frame.size.height);
-    NSLog(@"scrollview contentSize height: %f", scrollView.contentSize.height);
-
     //self.tableView.frame.size.height+lowestContentOffset will always be the lowest possible location
     loadMoreFooterView.frame = CGRectMake(0, self.tableView.frame.size.height+[self lowestContentOffset], self.tableView.frame.size.width, REFRESH_HEADER_HEIGHT);
 }
@@ -237,7 +233,6 @@
 
 -(void) reloadData{
     [self.tableView reloadData];
-    [self updateLoadMoreFrame:self.tableView];
 }
 
 #pragma mark - themes
@@ -269,7 +264,6 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    NSLog(@"%f", scrollView.contentOffset.y);
     if(enablePullToRefresh){
         if (isLoading) {
             // Update the content inset, good for section headers
@@ -351,21 +345,18 @@
         //If top is loading, need to check for the bottom
         isDragging = NO;
         
-        if (scrollView.contentOffset.y >= (REFRESH_HEADER_HEIGHT+[self lowestContentOffset])) {
+        if (scrollView.contentOffset.y >= (REFRESH_HEADER_HEIGHT+[self lowestContentOffset])) 
             [self startLoadingFooter];
-            NSLog(@"Loading more from bottom called");
-        }
+
         //Do this to stop the position of load more frame because otherwise constant checks
         updatedLoadMoreFrame = FALSE;
     }
 
     if(enablePullToRefresh && !isLoading){
         isDragging = NO;
-        if (scrollView.contentOffset.y <= -REFRESH_HEADER_HEIGHT) {
+        if (scrollView.contentOffset.y <= -REFRESH_HEADER_HEIGHT) 
             // Released above the header
-            NSLog(@"Loading more from top started");
-            [self startLoading];
-        }
+            [self startLoading];        
     }
 }
 
